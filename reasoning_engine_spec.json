@@ -1,0 +1,363 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Reasoning Engine API",
+    "description": "API specification for the OpenReasoningEngine",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/reason": {
+      "post": {
+        "summary": "Single model reasoning endpoint",
+        "description": "Execute reasoning task using a single model",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["task", "api_key", "model", "api_url"],
+                "properties": {
+                  "task": {
+                    "type": "string",
+                    "description": "The task description"
+                  },
+                  "api_key": {
+                    "type": "string",
+                    "description": "API key for the model service"
+                  },
+                  "model": {
+                    "type": "string",
+                    "description": "Model name to use"
+                  },
+                  "api_url": {
+                    "type": "string",
+                    "description": "API endpoint URL"
+                  },
+                  "temperature": {
+                    "type": "number",
+                    "description": "Temperature for response generation",
+                    "default": 0.7
+                  },
+                  "top_p": {
+                    "type": "number",
+                    "description": "Top p sampling parameter",
+                    "default": 1.0
+                  },
+                  "max_tokens": {
+                    "type": "integer",
+                    "description": "Maximum tokens in response",
+                    "default": 500
+                  },
+                  "verbose": {
+                    "type": "boolean",
+                    "description": "Enable verbose output",
+                    "default": false
+                  },
+                  "chain_store_api_key": {
+                    "type": "string",
+                    "description": "API key for chain store"
+                  },
+                  "wolfram_app_id": {
+                    "type": "string",
+                    "description": "Wolfram Alpha App ID"
+                  },
+                  "max_reasoning_steps": {
+                    "type": "integer",
+                    "description": "Maximum number of reasoning steps"
+                  },
+                  "image": {
+                    "type": "string",
+                    "description": "Image URL or base64 string"
+                  },
+                  "output_tools": {
+                    "type": "array",
+                    "description": "List of output tools",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "description": "Tool type"
+                        },
+                        "name": {
+                          "type": "string",
+                          "description": "Tool name"
+                        },
+                        "description": {
+                          "type": "string",
+                          "description": "Tool description"
+                        }
+                      }
+                    }
+                  },
+                  "reflection_mode": {
+                    "type": "boolean",
+                    "description": "Enable reflection mode",
+                    "default": false
+                  },
+                  "previous_chains": {
+                    "type": "array",
+                    "description": "Previous conversation chains",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "role": {
+                            "type": "string",
+                            "enum": ["system", "user", "assistant", "tool"]
+                          },
+                          "content": {
+                            "type": "string"
+                          },
+                          "tool_calls": {
+                            "type": "array",
+                            "items": {
+                              "type": "object"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "jina_api_key": {
+                    "type": "string",
+                    "description": "Jina API key"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "response": {
+                      "type": "string",
+                      "description": "Final response from the reasoning engine"
+                    },
+                    "reasoning_chain": {
+                      "type": "array",
+                      "description": "Complete reasoning chain",
+                      "items": {
+                        "type": "object"
+                      }
+                    },
+                    "thinking_tools": {
+                      "type": "array",
+                      "description": "Tools used during reasoning",
+                      "items": {
+                        "type": "object"
+                      }
+                    },
+                    "output_tools": {
+                      "type": "array",
+                      "description": "Output tools used",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - missing required parameters"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/run_ensemble": {
+      "post": {
+        "summary": "Ensemble reasoning endpoint",
+        "description": "Execute reasoning task using multiple models",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["task", "agents", "coordinator"],
+                "properties": {
+                  "task": {
+                    "type": "string",
+                    "description": "The task description"
+                  },
+                  "agents": {
+                    "type": "array",
+                    "description": "List of agent configurations",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "model": {
+                          "type": "string",
+                          "description": "Model name"
+                        },
+                        "api_key": {
+                          "type": "string",
+                          "description": "API key"
+                        },
+                        "api_url": {
+                          "type": "string",
+                          "description": "API endpoint URL"
+                        },
+                        "temperature": {
+                          "type": "number",
+                          "description": "Temperature setting"
+                        }
+                      }
+                    }
+                  },
+                  "coordinator": {
+                    "type": "object",
+                    "description": "Coordinator agent configuration",
+                    "properties": {
+                      "model": {
+                        "type": "string",
+                        "description": "Model name"
+                      },
+                      "api_key": {
+                        "type": "string",
+                        "description": "API key"
+                      },
+                      "api_url": {
+                        "type": "string",
+                        "description": "API endpoint URL"
+                      },
+                      "temperature": {
+                        "type": "number",
+                        "description": "Temperature setting"
+                      }
+                    }
+                  },
+                  "verbose": {
+                    "type": "boolean",
+                    "description": "Enable verbose output",
+                    "default": false
+                  },
+                  "chain_store_api_key": {
+                    "type": "string",
+                    "description": "Chain store API key"
+                  },
+                  "max_workers": {
+                    "type": "integer",
+                    "description": "Maximum number of concurrent workers"
+                  },
+                  "return_reasoning": {
+                    "type": "boolean",
+                    "description": "Return full reasoning chains",
+                    "default": false
+                  },
+                  "max_reasoning_steps": {
+                    "type": "integer",
+                    "description": "Maximum steps per agent"
+                  },
+                  "coordinator_max_steps": {
+                    "type": "integer",
+                    "description": "Maximum steps for coordinator"
+                  },
+                  "wolfram_app_id": {
+                    "type": "string",
+                    "description": "Wolfram Alpha App ID"
+                  },
+                  "temperature": {
+                    "type": "number",
+                    "description": "Global temperature setting",
+                    "default": 0.7
+                  },
+                  "top_p": {
+                    "type": "number",
+                    "description": "Top p sampling parameter",
+                    "default": 1.0
+                  },
+                  "max_tokens": {
+                    "type": "integer",
+                    "description": "Maximum tokens in response",
+                    "default": 500
+                  },
+                  "reflection_mode": {
+                    "type": "boolean",
+                    "description": "Enable reflection mode for all agents",
+                    "default": false
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "response": {
+                      "type": "string",
+                      "description": "Final coordinated response"
+                    },
+                    "agent_results": {
+                      "type": "array",
+                      "description": "Individual agent results",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "model": {
+                            "type": "string",
+                            "description": "Agent model name"
+                          },
+                          "response": {
+                            "type": "string",
+                            "description": "Agent response"
+                          },
+                          "reasoning_chain": {
+                            "type": "array",
+                            "description": "Agent reasoning chain",
+                            "items": {
+                              "type": "object"
+                            }
+                          },
+                          "thinking_tools": {
+                            "type": "array",
+                            "description": "Tools used by agent",
+                            "items": {
+                              "type": "object"
+                            }
+                          },
+                          "output_tools": {
+                            "type": "array",
+                            "description": "Output tools used by agent",
+                            "items": {
+                              "type": "object"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - missing required parameters"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    }
+  }
+}

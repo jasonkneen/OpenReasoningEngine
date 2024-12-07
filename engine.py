@@ -1,7 +1,7 @@
 import os
 import requests
 from e2b_code_interpreter import Sandbox
-from typing import List, Dict, Optional, Tuple, Union
+from typing import List, Dict, Optional, Tuple, Union, Any
 from colorama import init, Fore, Style
 from tools import execute_tool, clear_interpreter_state
 import json
@@ -13,6 +13,7 @@ from chain_store import (
 from planner import generate_plan  # Add this import at the top
 from call_ai import send_message_to_api, generate_best_candidate
 from helpers import validate_conversation
+from comparison import ComparisonEngine, create_comparison_data
 
 # Initialize colorama for cross-platform colored output
 init()
@@ -458,6 +459,46 @@ def thinking_loop(
         step_count += 1
 
     return full_conversation_history
+
+class ReasoningEngine:
+    def __init__(self):
+        self.comparison_engine = ComparisonEngine()
+        
+    def compare_statements(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Compare statements using the comparison engine
+        
+        Args:
+            data: Properly formatted comparison data
+            
+        Returns:
+            Comparison results
+        """
+        try:
+            # Validate input data structure
+            if not all(k in data for k in ["statements", "comparison_points"]):
+                raise ValueError("Invalid comparison data structure")
+                
+            statements = data["statements"]
+            points = data["comparison_points"]
+            
+            # Perform comparison
+            results = self.comparison_engine.compare_statements(
+                statements["statement1"],
+                statements["statement2"],
+                points
+            )
+            
+            return {
+                "success": True,
+                "results": results
+            }
+            
+        except Exception as e:
+            return {
+                "success": False,
+                "error": str(e)
+            }
 
 def complete_reasoning_task(
     task: str,

@@ -1,0 +1,208 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "OpenAI Integration Spec",
+    "description": "OpenAI API integration specification for the OpenReasoningEngine",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api.openai.com/v1",
+      "description": "OpenAI API Production Server"
+    },
+    {
+      "url": "https://openrouter.ai/api/v1",
+      "description": "OpenRouter API Server"
+    },
+    {
+      "url": "https://{deployment}.openai.azure.com/openai/deployments/{model}",
+      "description": "Azure OpenAI API Server",
+      "variables": {
+        "deployment": {
+          "description": "Azure OpenAI deployment name",
+          "default": "your-deployment"
+        },
+        "model": {
+          "description": "Model deployment name",
+          "default": "gpt-4"
+        }
+      }
+    }
+  ],
+  "security": [
+    {
+      "openaiAuth": []
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "openaiAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "OpenAI API key or compatible API key"
+      }
+    }
+  },
+  "paths": {
+    "/chat/completions": {
+      "post": {
+        "summary": "Create a chat completion",
+        "description": "Creates a completion for the chat message",
+        "operationId": "createChatCompletion",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["model", "messages"],
+                "properties": {
+                  "model": {
+                    "type": "string",
+                    "description": "ID of the model to use"
+                  },
+                  "messages": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "role": {
+                          "type": "string",
+                          "enum": ["system", "user", "assistant", "tool"]
+                        },
+                        "content": {
+                          "type": "string"
+                        },
+                        "tool_calls": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              },
+                              "type": {
+                                "type": "string",
+                                "enum": ["function"]
+                              },
+                              "function": {
+                                "type": "object",
+                                "properties": {
+                                  "name": {
+                                    "type": "string"
+                                  },
+                                  "arguments": {
+                                    "type": "string"
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "temperature": {
+                    "type": "number",
+                    "default": 0.7
+                  },
+                  "max_tokens": {
+                    "type": "integer",
+                    "default": 500
+                  },
+                  "tools": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": ["type", "function"],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": ["function"]
+                        },
+                        "function": {
+                          "type": "object",
+                          "required": ["name", "description", "parameters"],
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "description": {
+                              "type": "string"
+                            },
+                            "parameters": {
+                              "type": "object"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "choices": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "message": {
+                            "type": "object",
+                            "properties": {
+                              "role": {
+                                "type": "string"
+                              },
+                              "content": {
+                                "type": "string"
+                              },
+                              "tool_calls": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "id": {
+                                      "type": "string"
+                                    },
+                                    "type": {
+                                      "type": "string"
+                                    },
+                                    "function": {
+                                      "type": "object",
+                                      "properties": {
+                                        "name": {
+                                          "type": "string"
+                                        },
+                                        "arguments": {
+                                          "type": "string"
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

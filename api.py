@@ -113,7 +113,7 @@ def reason():
             'traceback': traceback.format_exc()
         }), 500
 
-@app.route('/ensemble', methods=['POST'])
+@app.route('/run_ensemble', methods=['POST'])
 def run_ensemble():
     """
     Ensemble reasoning endpoint.
